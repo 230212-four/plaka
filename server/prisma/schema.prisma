@@ -1,0 +1,67 @@
+datasource db {
+  provider  = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String           @id @default(uuid())
+  username     String           @unique
+  email        String           @unique
+  passwordHash String           @map("password_hash")
+  avatar       String?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  collections  UserCollection[]
+  wishlists    Wishlist[]
+
+  @@map("users")
+}
+
+model Vinyl {
+  id             String           @id @default(uuid())
+  providerSource String           @map("provider_source") // "discogs", "musicbrainz", or "manual"
+  providerId     String           @map("provider_id")     // The external platform ID
+  title          String
+  artist         String
+  genre          String[]         // Store array of genres
+  releaseYear    Int?             @map("release_year")
+  barcode        String?
+  coverUrl       String?          @map("cover_url")
+  collections    UserCollection[]
+  wishlists      Wishlist[]
+
+  // Ensures we never create duplicate entries for the same record from the same provider
+  @@unique([providerSource, providerId])
+  @@map("vinyls")
+}
+
+model UserCollection {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  vinylId       String    @map("vinyl_id")
+  condition     String    // e.g., "Mint", "Near Mint", "Very Good"
+  purchasePrice Decimal?  @map("purchase_price") @db.Decimal(10, 2)
+  purchaseDate  DateTime? @map("purchase_date")
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vinyl Vinyl @relation(fields: [vinylId], references: [id], onDelete: Cascade)
+
+  @@map("user_collections")
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  vinylId   String   @map("vinyl_id")
+  priority  String   // "High", "Medium", "Low"
+  createdAt DateTime @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vinyl Vinyl @relation(fields: [vinylId], references: [id], onDelete: Cascade)
+
+  @@map("wishlists")
+}
