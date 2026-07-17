@@ -1,7 +1,7 @@
 const test = async () => {
     try {
         console.log('--- REGISTER ---');
-        const regRes = await fetch('http://localhost:5001/api/auth/register', {
+        const regRes = await fetch('http://localhost:3000/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: 'testuser_' + Date.now(), email: `test_${Date.now()}@example.com`, password: 'password123' })
@@ -19,7 +19,7 @@ const test = async () => {
             }
 
             console.log('\n--- GET ME ---');
-            const meRes = await fetch('http://localhost:5001/api/auth/me', {
+            const meRes = await fetch('http://localhost:3000/api/auth/me', {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
