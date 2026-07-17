@@ -1,10 +1,7 @@
+import 'dotenv/config';          // Side-effect: loads .env BEFORE any other code runs
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
-
-// Load environment variables from .env
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +18,6 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'PLAKA Server running smoothly.' });
 });
 
-app.listen(PORT, () => {
-    console.log(`🐸 PLAKA database engine spinning on: http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🐸 PLAKA database engine spinning on: http://127.0.0.1:${PORT}`);
 });

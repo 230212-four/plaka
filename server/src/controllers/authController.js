@@ -14,11 +14,13 @@ export const register = async (req, res) => {
         }
 
         // Check if user already exists
+        console.time('[DB] register › findFirst');
         const existingUser = await prisma.user.findFirst({
             where: {
                 OR: [{ email }, { username }]
             }
         });
+        console.timeEnd('[DB] register › findFirst');
 
         if (existingUser) {
             return res.status(400).json({ error: 'Username or Email is already taken.' });
@@ -29,6 +31,7 @@ export const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Save user to PostgreSQL database via Prisma
+        console.time('[DB] register › create');
         const newUser = await prisma.user.create({
             data: {
                 username,
@@ -36,6 +39,7 @@ export const register = async (req, res) => {
                 passwordHash: hashedPassword,
             }
         });
+        console.timeEnd('[DB] register › create');
 
         // Generate JWT
         const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '7d' });
@@ -46,7 +50,8 @@ export const register = async (req, res) => {
             user: { id: newUser.id, username: newUser.username, email: newUser.email }
         });
     } catch (error) {
-        console.error('Registration Error:', error);
+        console.error('❌ [register] Failed:', error.message);
+        console.error('   Code:', error.code, '| Meta:', error.meta ?? 'n/a');
         res.status(500).json({ error: 'Server registration error.' });
     }
 };
@@ -61,9 +66,11 @@ export const login = async (req, res) => {
         }
 
         // Find the user by email
+        console.time('[DB] login › findUnique');
         const user = await prisma.user.findUnique({
             where: { email }
         });
+        console.timeEnd('[DB] login › findUnique');
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials.' });
@@ -84,7 +91,8 @@ export const login = async (req, res) => {
             user: { id: user.id, username: user.username, email: user.email }
         });
     } catch (error) {
-        console.error('Login Error:', error);
+        console.error('❌ [login] Failed:', error.message);
+        console.error('   Code:', error.code, '| Meta:', error.meta ?? 'n/a');
         res.status(500).json({ error: 'Server login error.' });
     }
 };
